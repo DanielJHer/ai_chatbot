@@ -19,23 +19,23 @@ export class LexStack extends Construct {
       iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaRole')
     );
 
-    // Define Lex bot
-    this.bot = new lex.CfnBot(this, 'Chatbot', {
-      name: 'APIChatbot',
+    this.bot = new lex.CfnBot(this, 'LexBot', {
+      name: 'APIChatBot',
       roleArn: lexRole.roleArn,
       dataPrivacy: {
-        ChildDirected: false,
+        ChildDirected: false, // Mandatory field
       },
-      idleSessionTtlInSeconds: 300,
+      idleSessionTtlInSeconds: 300, // Idle timeout in seconds
       botLocales: [
         {
-          localeId: 'en_US',
-          nluConfidenceThreshold: 0.4,
+          localeId: 'en_US', // Language and region
+          nluConfidenceThreshold: 0.4, // Confidence threshold for intent matching
           intents: [
             {
-              // Defining intents
               name: 'TroubleshootingIntent',
-              fulfillmentCodeHook: { enabled: true },
+              fulfillmentCodeHook: {
+                enabled: true,
+              },
               sampleUtterances: [
                 { utterance: 'Why is my API not responding?' },
                 { utterance: 'How do I fix a 401 error?' },
@@ -43,11 +43,25 @@ export class LexStack extends Construct {
               ],
             },
             {
-              // Add default fallback Intent
-              name: 'AMAZON.FallbackIntent',
-              description: 'Handles unrecognized user input',
+              name: 'FallbackIntent', // Explicitly reference fallback intent
+              description: 'Default fallback intent',
+              parentIntentSignature: 'AMAZON.FallbackIntent',
+              fulfillmentCodeHook: { enabled: false },
             },
           ],
+        },
+      ],
+    });
+
+    // Publish a numeric version of the bot
+    const botVersion = new lex.CfnBotVersion(this, 'ChatBotVersion', {
+      botId: this.bot.attrId, // Reference the bot ID
+      botVersionLocaleSpecification: [
+        {
+          localeId: 'en_US', // Specify the locale
+          botVersionLocaleDetails: {
+            sourceBotVersion: 'DRAFT', // Publish from the DRAFT version
+          },
         },
       ],
     });
@@ -56,7 +70,7 @@ export class LexStack extends Construct {
     const botAlias = new lex.CfnBotAlias(this, 'ChatBotAlias', {
       botId: this.bot.attrId,
       botAliasName: 'ChatBotAlias',
-      botVersion: 'DRAFT',
+      botVersion: botVersion.attrBotVersion,
     });
 
     new cdk.CfnOutput(this, 'LexBotAlias', {

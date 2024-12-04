@@ -1,8 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { FAQTable } from './dynamodb-stack';
-import { LambdaFunction } from './lambda-stack';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { ChatBotLambdaFunction } from './chatbot_lambda';
 import { LexStack } from './lex-stack';
 import { SeedLambda } from './seed-lambda';
 
@@ -14,9 +13,9 @@ export class ChatBotStack extends cdk.Stack {
     const faqTable = new FAQTable(this, 'FAQTableConstruct');
 
     // Create lambda function for chatbot
-    const chatbotLambda = new LambdaFunction(
+    const chatbotLambda = new ChatBotLambdaFunction(
       this,
-      'LambdaConstruct',
+      'ChatbotLambdaConstruct',
       faqTable.table.tableName
     );
 
