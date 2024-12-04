@@ -23,7 +23,9 @@ export class LexStack extends Construct {
     this.bot = new lex.CfnBot(this, 'Chatbot', {
       name: 'APIChatbot',
       roleArn: lexRole.roleArn,
-      dataPrivacy: { childDirected: false },
+      dataPrivacy: {
+        ChildDirected: false,
+      },
       idleSessionTtlInSeconds: 300,
       botLocales: [
         {
@@ -31,6 +33,7 @@ export class LexStack extends Construct {
           nluConfidenceThreshold: 0.4,
           intents: [
             {
+              // Defining intents
               name: 'TroubleshootingIntent',
               fulfillmentCodeHook: { enabled: true },
               sampleUtterances: [
@@ -38,6 +41,11 @@ export class LexStack extends Construct {
                 { utterance: 'How do I fix a 401 error?' },
                 { utterance: 'What does a 429 error mean?' },
               ],
+            },
+            {
+              // Add default fallback Intent
+              name: 'AMAZON.FallbackIntent',
+              description: 'Handles unrecognized user input',
             },
           ],
         },
@@ -48,7 +56,7 @@ export class LexStack extends Construct {
     const botAlias = new lex.CfnBotAlias(this, 'ChatBotAlias', {
       botId: this.bot.attrId,
       botAliasName: 'ChatBotAlias',
-      botVersion: '$LATEST',
+      botVersion: 'DRAFT',
     });
 
     new cdk.CfnOutput(this, 'LexBotAlias', {

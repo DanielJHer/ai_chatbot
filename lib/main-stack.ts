@@ -3,8 +3,8 @@ import { Construct } from 'constructs';
 import { FAQTable } from './dynamodb-stack';
 import { LambdaFunction } from './lambda-stack';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { env } from 'process';
+import { LexStack } from './lex-stack';
+import { SeedLambda } from './seed-lambda';
 
 export class ChatBotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -13,7 +13,7 @@ export class ChatBotStack extends cdk.Stack {
     // Create dynamodb table
     const faqTable = new FAQTable(this, 'FAQTableConstruct');
 
-    // Create lambda function
+    // Create lambda function for chatbot
     const chatbotLambda = new LambdaFunction(
       this,
       'LambdaConstruct',
@@ -23,54 +23,39 @@ export class ChatBotStack extends cdk.Stack {
     // Granting chatbot lambda function read access to dynamodb table
     faqTable.table.grantReadData(chatbotLambda.lambda);
 
-    // Create Lambda function to seed Dynamodb table
-    const seedLambda = new lambda.Function(this, 'SeedLambda', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-        const AWS = require('aws-sdk');
-        const dynamodb = new AWS.DynamoDB.DocumentClient();
-
-        const items = [
-          { question: "Why is my API not responding?", answer: "Check if your server is reachable and ensure the endpoint URL is correct." },
-          { question: "How do I fix a 401 error?", answer: "Ensure your API key is valid and has the necessary permissions." },
-          { question: "What does a 429 error mean?", answer: "This indicates you've exceeded the API's rate limit. Wait before making more requests." }
-        ];
-
-        exports.handler = async () => {
-          const tableName = process.env.TABLE_NAME;
-          try {
-            for (const item of items) {
-              await dynamodb.put({ TableName: tableName, Item: item }).promise();
-            }
-            console.log("Seeding complete");
-            return { statusCode: 200, body: "Seeding complete" };
-          } catch (error) {
-            console.error("Error seeding data:", error);
-            return { statusCode: 500, body: "Error seeding data" };
-          }
-        };
-      `),
-      environment: {
-        TABLE_NAME: faqTable.table.tableName,
-      },
-    });
+    // Create seed lambda function for dynamodb table
+    const seedLambda = new SeedLambda(
+      this,
+      'SeedLambdaConstruct',
+      faqTable.table.tableName
+    );
 
     // Grant the seed lambda write access to the dynamodb table
-    faqTable.table.grantWriteData(seedLambda);
+    faqTable.table.grantWriteData(seedLambda.lambda);
 
-    // Invoke the seed lambda after deployment
+    // Create custom resource for seed lambda after deployment
     const customResourceProvider = new cdk.custom_resources.Provider(
       this,
       'SeedProvider',
       {
-        onEventHandler: seedLambda,
+        onEventHandler: seedLambda.lambda,
       }
     );
 
-    // Create custom resource for seed lambda
     new cdk.CustomResource(this, 'SeedResource', {
       serviceToken: customResourceProvider.serviceToken,
+    });
+
+    // Create Lex Bot and Integrate with Lambda
+    const lexBot = new LexStack(
+      this,
+      'LexBotConstruct',
+      chatbotLambda.lambda.functionArn
+    );
+
+    new cdk.CfnOutput(this, 'LexbotId', {
+      value: lexBot.bot.attrId,
+      description: 'ID of Lex bot',
     });
   }
 }
