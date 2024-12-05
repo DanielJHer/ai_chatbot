@@ -14,12 +14,14 @@ The solution leverages AWS Lex for natural language understanding (NLU) and inte
 
 ## Architecture Overview
 
-AWS Lex: Manages conversational interactions and intent parsing.
-AWS Lambda: Executes backend logic to fetch answers from DynamoDB.
-Amazon DynamoDB: Stores frequently asked questions (FAQs) and corresponding answers.
-AWS CDK: Deploys the infrastructure as code, ensuring easy management and scalability.
-Features
-Dynamic FAQ Lookup: The bot fetches answers from DynamoDB based on user queries.
-Serverless: Utilizes AWS Lambda and Lex for cost-effective, scalable infrastructure.
-Easy Deployment: Fully deployable using AWS CDK for consistent and repeatable environments.
-Automatic Updates: Changes to FAQs are easily managed by updating the DynamoDB table.
+- AWS Lex: Manages conversational interactions and intent parsing.
+- AWS Lambda: Executes backend logic to fetch answers from DynamoDB.
+- Amazon DynamoDB: Stores frequently asked questions (FAQs) and corresponding answers.
+- AWS CDK: Deploys the infrastructure as code, ensuring easy management and scalability.
+
+## Features
+
+- Dynamic FAQ Lookup: The bot fetches answers from DynamoDB based on user queries.
+- Serverless: Utilizes AWS Lambda and Lex for cost-effective, scalable infrastructure.
+- Easy Deployment: Fully deployable using AWS CDK for consistent and repeatable environments.
+- Automatic Updates: Changes to FAQs are easily managed by updating the DynamoDB table.
