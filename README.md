@@ -1,14 +1,25 @@
-# Welcome to your CDK TypeScript project
+# Serverless AI Chatbot with AWS Lex, Lambda, and DynamoDB
 
-This is a blank project for CDK development with TypeScript.
+This project demonstrates how to build a serverless AI chatbot using AWS Lex, AWS Lambda, and Amazon DynamoDB. The chatbot can troubleshoot basic API issues by dynamically retrieving answers from a DynamoDB table. This solution is deployed using AWS CDK, making it easily reproducible and scalable.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Project Overview
 
-## Useful commands
+The chatbot is designed to answer common API troubleshooting questions such as:
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+"Why is my API not responding?"
+"How do I fix a 401 error?"
+"What does a 429 error mean?"
+
+The solution leverages AWS Lex for natural language understanding (NLU) and intent handling, AWS Lambda for backend logic, and DynamoDB to store FAQ data. All resources are managed using AWS CDK for infrastructure-as-code (IaC).
+
+## Architecture Overview
+
+AWS Lex: Manages conversational interactions and intent parsing.
+AWS Lambda: Executes backend logic to fetch answers from DynamoDB.
+Amazon DynamoDB: Stores frequently asked questions (FAQs) and corresponding answers.
+AWS CDK: Deploys the infrastructure as code, ensuring easy management and scalability.
+Features
+Dynamic FAQ Lookup: The bot fetches answers from DynamoDB based on user queries.
+Serverless: Utilizes AWS Lambda and Lex for cost-effective, scalable infrastructure.
+Easy Deployment: Fully deployable using AWS CDK for consistent and repeatable environments.
+Automatic Updates: Changes to FAQs are easily managed by updating the DynamoDB table.

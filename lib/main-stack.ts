@@ -4,6 +4,7 @@ import { FAQTable } from './dynamodb-stack';
 import { ChatBotLambdaFunction } from './chatbot_lambda';
 import { LexStack } from './lex-stack';
 import { SeedLambda } from './seed-lambda';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class ChatBotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -52,6 +53,12 @@ export class ChatBotStack extends cdk.Stack {
       chatbotLambda.lambda.functionArn
     );
 
+    // Ensure IAM permissions for lambda function
+    chatbotLambda.lambda.grantInvoke(
+      new iam.ServicePrincipal('lex.amazonaws.com')
+    );
+
+    // Lexbot outputs
     new cdk.CfnOutput(this, 'LexbotId', {
       value: lexBot.bot.attrId,
       description: 'ID of Lex bot',

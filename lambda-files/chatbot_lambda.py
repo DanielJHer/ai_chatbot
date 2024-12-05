@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         # Query dynamodb for matching question
         table = dynamodb.Table(table_name)
         response = table.scan()
-        itesm = response.get('Items', [])
+        items = response.get('Items', [])
 
         # Search for matching answer
         for item in items:

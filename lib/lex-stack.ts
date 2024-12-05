@@ -46,11 +46,29 @@ export class LexStack extends Construct {
               name: 'FallbackIntent', // Explicitly reference fallback intent
               description: 'Default fallback intent',
               parentIntentSignature: 'AMAZON.FallbackIntent',
-              fulfillmentCodeHook: { enabled: false },
+              fulfillmentCodeHook: { enabled: true },
             },
           ],
         },
       ],
+      autoBuildBotLocales: true, // Automatically build locales
+      // For test bots
+      testBotAliasSettings: {
+        botAliasLocaleSettings: [
+          {
+            localeId: 'en_US',
+            botAliasLocaleSetting: {
+              enabled: true,
+              codeHookSpecification: {
+                lambdaCodeHook: {
+                  lambdaArn: lambdaArn, // ARN of your Lambda function
+                  codeHookInterfaceVersion: '1.0',
+                },
+              },
+            },
+          },
+        ],
+      },
     });
 
     // Publish a numeric version of the bot
@@ -67,12 +85,27 @@ export class LexStack extends Construct {
     });
 
     // Associate Lambda with Lex Bot
-    const botAlias = new lex.CfnBotAlias(this, 'ChatBotAlias', {
+    const botAlias = new lex.CfnBotAlias(this, 'TestChatBotAlias', {
       botId: this.bot.attrId,
-      botAliasName: 'ChatBotAlias',
+      botAliasName: 'TestChatBotAlias',
       botVersion: botVersion.attrBotVersion,
+      botAliasLocaleSettings: [
+        {
+          localeId: 'en_US', // Specify the locale
+          botAliasLocaleSetting: {
+            enabled: true, // Enable the locale
+            codeHookSpecification: {
+              lambdaCodeHook: {
+                codeHookInterfaceVersion: '1.0', // Lambda interface version
+                lambdaArn: lambdaArn, // ARN of the Lambda function
+              },
+            },
+          },
+        },
+      ],
     });
 
+    // Lex bot alias output
     new cdk.CfnOutput(this, 'LexBotAlias', {
       value: botAlias.attrBotAliasId,
       description: 'Alias ID for Lex bot',
